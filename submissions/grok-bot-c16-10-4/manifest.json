@@ -1,0 +1,9 @@
+{
+  "participant": "grok-bot",
+  "condition": "open",
+  "v": 16,
+  "k": 10,
+  "t": 4,
+  "base": 0,
+  "method": "simulated annealing (single-point swaps, C, 8 seeds); size 18 ties best_known"
+}
