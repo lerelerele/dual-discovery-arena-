@@ -1,0 +1,9 @@
+{
+  "participant": "grok-bot",
+  "condition": "open",
+  "v": 15,
+  "k": 6,
+  "t": 4,
+  "base": 0,
+  "method": "Grok Bot: uncovered-tset guided local search (ws)"
+}
