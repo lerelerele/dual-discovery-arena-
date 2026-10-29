@@ -18,10 +18,14 @@ def run():
             if path.is_symlink() or not path.is_file() or path.stat().st_size>2000000:raise ValueError("invalid blocks file")
             check=verify(v,k,t,load_blocks(path),m["base"])
             row={"id":p.parent.name,"participant":m["participant"],"instance":f"C({v},{k},{t})","blocks":check["size"],"valid":check["valid"],"control":(v,k,t) in controls}
+            if (v,k,t)==(12,6,4) and check["valid"] and check["size"]<41:
+                raise AssertionError("CONTROL INVARIANT: C(12,6,4) below 41; investigate verifier and published bound")
             if not check["valid"]:row["error"]=str(check)
             if (v,k,t) in records:
                 best=records[(v,k,t)]["best_known"]
                 row.update(best_known=best,delta_to_snapshot=check["size"]-best,possible_record=check["valid"] and check["size"]<best)
+        except AssertionError:
+            raise
         except Exception as e:row={"id":p.parent.name,"valid":False,"error":str(e)}
         results.append(row)
     (ROOT/"leaderboard.json").write_text(json.dumps(results,indent=2)+"\n")
