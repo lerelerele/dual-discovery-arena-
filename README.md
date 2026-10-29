@@ -34,3 +34,7 @@ python -m arena.leaderboard
 ## Security and governance
 
 Protect the main branch, require pull request review and successful checks, and require CODEOWNERS approval for verifier/workflow changes. Do not add secrets. This is a prototype; further sandboxing and resource limits are recommended before accepting large volumes of untrusted submissions.
+
+## Provenance and selection audit
+
+The pilot originates from La Jolla Coverings Repository's `coverdata.json` archival snapshot: https://zenodo.org/records/19735294 . SHA-256 of the input bytes: `9e7da3710921066b10234fdc95379a18df3a7d3ae0f8a08ae188ea6bbca92f87`. The initial selector sampled 141 eligible candidates with seed `20261029`, using the maximum timestamp in each record's `imps` history as an activity proxy. **That timestamp is not guaranteed to be the date of a strict upper-bound improvement.** Consequently the historical active/stagnant strata are provisional and the selection is not yet scientifically frozen. Obtain the original snapshot, verify its SHA-256, and rerun the selector before drawing experimental conclusions. The eight selected triples match the original selector on the archived input; their current best-known bounds still need independent checking.
