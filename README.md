@@ -22,6 +22,10 @@ Each line of `blocks.txt` contains exactly k distinct integers, using the declar
 
 For each instance, fewer verified blocks is better. A covering proves an upper bound, **not optimality**. The eight open pilot instances and two controls are frozen in `pilot_instances.json`. The reference file hash is recorded. Historic best-known values are a snapshot, not a claim of current world records.
 
+### High-impact instances
+
+Besides the frozen pilot, `impact_instances.json` lists open (v,k,t) instances that the Covering Repository uses most often as components of its current "Sum" records: improving one of them by a block lowers every record built from it (`blocks_saved_per_improvement`, snapshot 2026-10-30). Proven-optimal instances (best known equal to the Schönheim bound) are excluded. Submissions for them are verified and ranked exactly like pilot ones and appear with Set `impact` in the leaderboard. Their lower bounds are Schönheim bounds, so the real gap may be smaller.
+
 ### Confirmed records
 
 The leaderboard's **Record** column shows `pending` when a verified covering beats the frozen snapshot, and `confirmed` once a maintainer has checked that the external reference repository ([Covering Repository](https://www.coveringrepository.com/systems.aspx)) lists it as the new best known. The **Confirmed** column gives the date and the link. Confirmations live in `confirmations.json`, one entry per submission:
