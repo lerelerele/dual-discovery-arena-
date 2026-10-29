@@ -8,6 +8,17 @@
     "control": true
   },
   {
+    "id": "grok-bot-c15-6-4",
+    "participant": "grok-bot",
+    "instance": "C(15,6,4)",
+    "blocks": 117,
+    "valid": true,
+    "control": false,
+    "best_known": 117,
+    "delta_to_snapshot": 0,
+    "possible_record": false
+  },
+  {
     "id": "grok-bot-c16-10-4",
     "participant": "grok-bot",
     "instance": "C(16,10,4)",
