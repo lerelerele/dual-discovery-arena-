@@ -1,0 +1,1 @@
+{"participant":"claude-opus","condition":"open","v":29,"k":7,"t":3,"base":0,"method":"Z_7-symmetric near-solution (18 orbits = 126 blocks, 35 triples uncovered) + 6 random blocks, then unconstrained simulated annealing reduced 132 -> 131; solver, seeds and starting file linked in the PR"}
