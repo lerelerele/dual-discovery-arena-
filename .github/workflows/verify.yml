@@ -15,7 +15,8 @@ jobs:
         with:
           ref: main
           persist-credentials: false
-      - name: Download PR changed files list
+      - name: Classify PR changed files
+        id: classify
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
@@ -31,11 +32,20 @@ jobs:
                   files.extend(json.load(resp))
                   link=resp.headers.get("Link","")
               url=next((part.split("<",1)[1].split(">",1)[0] for part in link.split(",") if 'rel="next"' in part),None)
-          if not files or any(not f["filename"].startswith("submissions/") or f["status"] not in ("added",) or f["filename"].split("/")[-1] not in ("blocks.txt","manifest.json") or len(f["filename"].split("/"))!=3 for f in files):
+          if not files:raise SystemExit("No changed files")
+          subs=[f for f in files if f["filename"].startswith("submissions/")]
+          if not subs:
+              print("No submissions; code changes are covered by test.yml")
+              with open(os.environ["GITHUB_OUTPUT"],"a") as output:output.write("has_submissions=false\\n")
+              raise SystemExit(0)
+          if len(subs)!=len(files):raise SystemExit("Do not mix submissions with code changes")
+          if any(f["status"]!="added" or f["filename"].split("/")[-1] not in ("blocks.txt","manifest.json") or len(f["filename"].split("/"))!=3 for f in subs):
               raise SystemExit("PR must only add submission manifest.json and blocks.txt files")
+          with open(os.environ["GITHUB_OUTPUT"],"a") as output:output.write("has_submissions=true\\n")
           with open("/tmp/allowed.json","w") as out:json.dump([f["filename"] for f in files],out)
           PY
       - name: Fetch untrusted submission data only
+        if: steps.classify.outputs.has_submissions == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
@@ -59,9 +69,11 @@ jobs:
               target=pathlib.Path(path);target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(raw)
           PY
       - uses: actions/setup-python@v5
+        if: steps.classify.outputs.has_submissions == 'true'
         with:
           python-version: '3.12'
       - name: Verify using trusted main code
+        if: steps.classify.outputs.has_submissions == 'true'
         run: |
           python -m arena.leaderboard
           python - <<'PY'
@@ -76,7 +88,7 @@ jobs:
               raise SystemExit('Rejected new submission(s) in PR')
           PY
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: steps.classify.outputs.has_submissions == 'true'
         with:
           name: leaderboard-preview
           path: |
