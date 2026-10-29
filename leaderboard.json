@@ -8,7 +8,13 @@
     "control": false,
     "best_known": 132,
     "delta_to_snapshot": -1,
-    "possible_record": true
+    "possible_record": true,
+    "confirmed": {
+      "on": "2026-10-29",
+      "source": "Covering Repository",
+      "url": "https://www.coveringrepository.com/systems.aspx"
+    },
+    "record_status": "confirmed"
   },
   {
     "id": "example-fano",
@@ -27,7 +33,8 @@
     "control": false,
     "best_known": 117,
     "delta_to_snapshot": 0,
-    "possible_record": false
+    "possible_record": false,
+    "record_status": null
   },
   {
     "id": "grok-bot-c16-10-4",
@@ -38,6 +45,7 @@
     "control": false,
     "best_known": 18,
     "delta_to_snapshot": 0,
-    "possible_record": false
+    "possible_record": false,
+    "record_status": null
   }
 ]
