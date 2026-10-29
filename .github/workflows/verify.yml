@@ -64,7 +64,7 @@ jobs:
               blob_req=urllib.request.Request(blob_url,headers={"Authorization":"Bearer "+os.environ["GH_TOKEN"],"Accept":"application/vnd.github+json"})
               with urllib.request.urlopen(blob_req,timeout=15) as blob_resp:blob=json.load(blob_resp)
               if blob.get("encoding")!="base64" or not isinstance(blob.get("content"),str):raise SystemExit("blob encoding missing")
-              raw=base64.b64decode(blob["content"],validate=True)
+              raw=base64.b64decode("".join(blob["content"].split()),validate=True)
               if len(raw)>2000000:raise SystemExit("file too large")
               target=pathlib.Path(path);target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(raw)
           PY
