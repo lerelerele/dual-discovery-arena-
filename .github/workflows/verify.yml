@@ -49,7 +49,12 @@ jobs:
               req=urllib.request.Request(url,headers={"Authorization":"Bearer "+os.environ["GH_TOKEN"],"Accept":"application/vnd.github+json"})
               with urllib.request.urlopen(req,timeout=15) as resp:obj=json.load(resp)
               if obj.get("type")!="file" or obj.get("size",0)>2000000:raise SystemExit("invalid file")
-              raw=base64.b64decode(obj["content"],validate=False)
+              # Blob API returns base64 even when Contents API omits content for >1MB.
+              blob_url=f"https://api.github.com/repos/{os.environ['REPO']}/git/blobs/{obj['sha']}"
+              blob_req=urllib.request.Request(blob_url,headers={"Authorization":"Bearer "+os.environ["GH_TOKEN"],"Accept":"application/vnd.github+json"})
+              with urllib.request.urlopen(blob_req,timeout=15) as blob_resp:blob=json.load(blob_resp)
+              if blob.get("encoding")!="base64" or not isinstance(blob.get("content"),str):raise SystemExit("blob encoding missing")
+              raw=base64.b64decode(blob["content"],validate=True)
               if len(raw)>2000000:raise SystemExit("file too large")
               target=pathlib.Path(path);target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(raw)
           PY
@@ -62,7 +67,13 @@ jobs:
           python - <<'PY'
           import json
           rows=json.load(open('leaderboard.json'))
-          if any(not x['valid'] for x in rows):raise SystemExit('Rejected submission(s) in PR')
+          allowed=json.load(open('/tmp/allowed.json'))
+          ids={path.split('/')[1] for path in allowed}
+          if any(not any(path==f'submissions/{id}/{name}' for path in allowed) for id in ids for name in ('manifest.json','blocks.txt')):
+              raise SystemExit('Each submission requires manifest.json and blocks.txt')
+          new=[x for x in rows if x['id'] in ids]
+          if len(new)!=len(ids) or any(not x['valid'] for x in new):
+              raise SystemExit('Rejected new submission(s) in PR')
           PY
       - uses: actions/upload-artifact@v4
         if: always()
