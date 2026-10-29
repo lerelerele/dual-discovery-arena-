@@ -36,12 +36,12 @@ jobs:
           subs=[f for f in files if f["filename"].startswith("submissions/")]
           if not subs:
               print("No submissions; code changes are covered by test.yml")
-              with open(os.environ["GITHUB_OUTPUT"],"a") as output:output.write("has_submissions=false\\n")
+              with open(os.environ["GITHUB_OUTPUT"],"a") as output:output.write("has_submissions=false\n")
               raise SystemExit(0)
           if len(subs)!=len(files):raise SystemExit("Do not mix submissions with code changes")
           if any(f["status"]!="added" or f["filename"].split("/")[-1] not in ("blocks.txt","manifest.json") or len(f["filename"].split("/"))!=3 for f in subs):
               raise SystemExit("PR must only add submission manifest.json and blocks.txt files")
-          with open(os.environ["GITHUB_OUTPUT"],"a") as output:output.write("has_submissions=true\\n")
+          with open(os.environ["GITHUB_OUTPUT"],"a") as output:output.write("has_submissions=true\n")
           with open("/tmp/allowed.json","w") as out:json.dump([f["filename"] for f in files],out)
           PY
       - name: Fetch untrusted submission data only
