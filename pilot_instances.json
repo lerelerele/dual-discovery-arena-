@@ -1,0 +1,83 @@
+{
+  "source": "coverdata.json",
+  "sha256": "9e7da3710921066b10234fdc95379a18df3a7d3ae0f8a08ae188ea6bbca92f87",
+  "seed": 20261029,
+  "controls": [
+    [
+      7,
+      3,
+      2
+    ],
+    [
+      12,
+      6,
+      4
+    ]
+  ],
+  "instances": [
+    {
+      "v": 28,
+      "k": 7,
+      "t": 3,
+      "best_known": 120,
+      "lower_bound": 108,
+      "stratum": "activa"
+    },
+    {
+      "v": 29,
+      "k": 7,
+      "t": 3,
+      "best_known": 132,
+      "lower_bound": 116,
+      "stratum": "activa"
+    },
+    {
+      "v": 14,
+      "k": 5,
+      "t": 3,
+      "best_known": 43,
+      "lower_bound": 37,
+      "stratum": "estancada"
+    },
+    {
+      "v": 26,
+      "k": 6,
+      "t": 4,
+      "best_known": 1152,
+      "lower_bound": 1040,
+      "stratum": "estancada"
+    },
+    {
+      "v": 16,
+      "k": 10,
+      "t": 4,
+      "best_known": 18,
+      "lower_bound": 16,
+      "stratum": "activa"
+    },
+    {
+      "v": 15,
+      "k": 6,
+      "t": 4,
+      "best_known": 117,
+      "lower_bound": 93,
+      "stratum": "estancada"
+    },
+    {
+      "v": 22,
+      "k": 9,
+      "t": 5,
+      "best_known": 362,
+      "lower_bound": 277,
+      "stratum": "activa"
+    },
+    {
+      "v": 14,
+      "k": 7,
+      "t": 5,
+      "best_known": 138,
+      "lower_bound": 118,
+      "stratum": "estancada"
+    }
+  ]
+}
