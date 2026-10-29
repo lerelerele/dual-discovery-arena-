@@ -33,6 +33,7 @@ def main():
         assert any({m["model"] for m in c["lineage"].values()}=={"gpt","opus"} for c in ec)
         cc=[e["data"] for e in entries if e["kind"]=="candidate" and e["data"]["condition"]=="C"]
         assert {c["author"] for c in cc}=={"gpt#1","gpt#2"}
+        assert any({"gpt#1","gpt#2"} <= set(c["lineage"]) for c in cc)
         rr=[e["data"] for e in entries if e["kind"]=="proposal_rejected" and e["data"]["condition"]=="reject"]
         assert len(rr)==2 and all("parent" in x["reason"] for x in rr)
         assert verify_chain(path)[0]
