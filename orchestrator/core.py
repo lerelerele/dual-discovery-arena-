@@ -1,5 +1,5 @@
-"""Prototype A-G orchestrator core. Mock only; not a scientific runner."""
-import random
+"""Mock-only experimental runner. No external model calls."""
+import math,random
 from dataclasses import dataclass,field
 class BudgetExceeded(Exception):pass
 @dataclass
@@ -9,7 +9,7 @@ class Budget:
     cost:float=0.0
     verifier_calls:int=0
     def charge(self,cost):
-        if not isinstance(cost,(int,float)) or not 0<=cost<float("inf"):raise ValueError("invalid cost")
+        if type(cost) not in (float,int) or not math.isfinite(cost) or cost<0:raise ValueError("invalid cost")
         if self.cost+cost>self.max_cost:raise BudgetExceeded("cost")
         self.cost+=cost
     def use_verifier(self):
@@ -22,6 +22,7 @@ class Budget:
 class Candidate:
     cid:str
     author:str
+    model:str
     parents:list
     blocks:list
     size:int=None
@@ -34,27 +35,44 @@ def run_condition(name,agents,instance,budget,seed,exchange,verify_fn,ledger,rou
     v,k,t=(instance[x] for x in ("v","k","t"))
     rnd=random.Random(seed)
     pool=[];n=0
+    ids=[f"{ag.name}#{i}" for i,ag in enumerate(agents,1)]
+    if len(set(ids))!=len(ids):raise ValueError("duplicate agent identities")
     try:
         for turn in range(rounds):
-            for ag in agents:
+            for ag,aid in zip(agents,ids):
                 if budget.verifier_calls>=budget.max_verifier_calls:raise BudgetExceeded("verifier")
-                visible=pool if exchange else [c for c in pool if ag.name in c.lineage and len(c.lineage)==1]
-                view=[{"cid":c.cid,"size":c.size,"author":c.author,"blocks":c.blocks} for c in visible if c.valid]
+                visible=pool if exchange else [c for c in pool if set(c.lineage)=={aid}]
+                view=[{"cid":c.cid,"size":c.size,"author":c.author,"model":c.model,"blocks":c.blocks} for c in visible if c.valid]
                 blocks,parents,cost,transcript=ag.propose(instance,view,rnd)
-                allowed={c.cid:c for c in visible if c.valid}
-                if len(parents)!=len(set(parents)) or any(pid not in allowed for pid in parents):
-                    raise ValueError("agent references invisible or invalid parent")
+                # A model call has already happened. Charge and log before validating its proposal.
                 budget.charge(cost)
-                ledger.append("model_call",{"condition":name,"agent":ag.name,"round":turn,"cost":cost,"transcript":transcript})
-                budget.use_verifier()
-                result=verify_fn(v,k,t,blocks,instance.get("base",0))
+                ledger.append("model_call",{"condition":name,"agent_id":aid,"model":ag.name,"round":turn,"cost":cost,"transcript":transcript})
+                allowed={c.cid:c for c in visible if c.valid}
+                reason=None
+                if not isinstance(parents,list) or any(not isinstance(p,str) for p in parents):
+                    reason="invalid parent identifiers"
+                elif len(parents)!=len(set(parents)) or any(pid not in allowed for pid in parents):
+                    reason="invisible, duplicate or invalid parent"
+                if reason is not None:
+                    ledger.append("proposal_rejected",{"condition":name,"agent_id":aid,"model":ag.name,"reason":reason})
+                    continue
+                try:
+                    budget.use_verifier()
+                    result=verify_fn(v,k,t,blocks,instance.get("base",0))
+                except AssertionError:
+                    raise
+                except (ValueError,TypeError,IndexError,OverflowError) as e:
+                    ledger.append("proposal_rejected",{"condition":name,"agent_id":aid,"model":ag.name,"reason":str(e),"verifier_charged":True})
+                    continue
                 n+=1
-                lineage={ag.name:1}
+                lineage={aid:{"model":ag.name,"contributions":1}}
                 for pid in parents:
-                    for author,count in allowed[pid].lineage.items():lineage[author]=lineage.get(author,0)+count
-                cand=Candidate(f"{name}-{n}",ag.name,parents,blocks,result.get("size"),result.get("valid"),lineage)
+                    for ancestor,meta in allowed[pid].lineage.items():
+                        item=lineage.setdefault(ancestor,{"model":meta["model"],"contributions":0})
+                        item["contributions"]+=meta["contributions"]
+                cand=Candidate(f"{name}-{n}",aid,ag.name,parents,blocks,result.get("size"),result.get("valid"),lineage)
                 pool.append(cand)
-                ledger.append("candidate",{"condition":name,"cid":cand.cid,"author":ag.name,"parents":parents,"size":cand.size,"valid":cand.valid,"lineage":lineage})
+                ledger.append("candidate",{"condition":name,"cid":cand.cid,"author":aid,"model":ag.name,"parents":parents,"size":cand.size,"valid":cand.valid,"lineage":lineage})
     except BudgetExceeded as e:
         ledger.append("budget_exhausted",{"condition":name,"which":str(e),"cost":budget.cost,"verifier_calls":budget.verifier_calls})
     valid=[c for c in pool if c.valid]
