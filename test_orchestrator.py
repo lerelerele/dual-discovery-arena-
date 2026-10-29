@@ -46,5 +46,5 @@ def main():
         try:Ledger(path,{})
         except FileExistsError:pass
         else:raise AssertionError("ledger overwritten")
-        print("OK: mock orchestrator budget, isolation, lineage and ledger tests")
+        print("OK: mock orchestrator budget, isolation, lineage and ledger tests (PR refresh)")
 if __name__=="__main__":main()
