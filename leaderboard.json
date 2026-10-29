@@ -1,0 +1,9 @@
+[
+  {
+    "id": "example-fano",
+    "participant": "reference-fano",
+    "instance": "C(7,3,2)",
+    "blocks": 7,
+    "valid": true
+  }
+]
