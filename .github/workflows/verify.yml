@@ -57,7 +57,13 @@ jobs:
         with:
           python-version: '3.12'
       - name: Verify using trusted main code
-        run: python -m arena.leaderboard
+        run: |
+          python -m arena.leaderboard
+          python - <<'PY'
+          import json
+          rows=json.load(open('leaderboard.json'))
+          if any(not x['valid'] for x in rows):raise SystemExit('Rejected submission(s) in PR')
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
