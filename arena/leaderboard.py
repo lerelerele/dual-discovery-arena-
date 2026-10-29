@@ -4,6 +4,13 @@ from verify import verify,load_blocks
 ROOT=Path(__file__).resolve().parents[1]
 pilot=json.loads((ROOT/"pilot_instances.json").read_text())
 records={(x["v"],x["k"],x["t"]):x for x in pilot["instances"]}
+instance_set={key:"pilot" for key in records}
+IMPACT_PATH=ROOT/"impact_instances.json"
+if IMPACT_PATH.exists():
+    for x in json.loads(IMPACT_PATH.read_text())["instances"]:
+        key=(x["v"],x["k"],x["t"])
+        if any(type(n) is not int for n in key+(x["best_known"],)) or key in records:raise ValueError(f"invalid or duplicate impact instance: {x!r}")
+        records[key]=x;instance_set[key]="impact"
 controls={(7,3,2),(12,6,4)}
 CONF_KEYS={"submission","instance","blocks","confirmed_on","source","url"}
 def load_confirmations():
@@ -45,7 +52,7 @@ def run():
             if not check["valid"]:row["error"]=str(check)
             if (v,k,t) in records:
                 best=records[(v,k,t)]["best_known"]
-                row.update(best_known=best,delta_to_snapshot=check["size"]-best,possible_record=check["valid"] and check["size"]<best)
+                row.update(set=instance_set[(v,k,t)],best_known=best,delta_to_snapshot=check["size"]-best,possible_record=check["valid"] and check["size"]<best)
         except AssertionError:
             raise
         except Exception as e:row={"id":p.parent.name,"valid":False,"error":str(e)}
@@ -66,13 +73,13 @@ def run():
     valid=sorted((x for x in results if x["valid"] and not x["control"]),key=lambda x:(x["instance"],x["blocks"],x["participant"]))
     controls_valid=[x for x in results if x["valid"] and x["control"]]
     lines=["# Dual Discovery Arena — Verified leaderboard","",
-           "Smaller is better within each instance. **Record**: `pending` = beats the frozen snapshot but not yet confirmed against the external reference repository; `confirmed` = a maintainer checked that the reference repository lists it as the new best known (date and link under **Confirmed**, source of truth `confirmations.json`).","",
-           "| Instance | Blocks | Snapshot best | Delta | Record | Confirmed | Participant | Submission |","|---|---:|---:|---:|---|---|---|---|"]
+           "Smaller is better within each instance. **Set**: `pilot` = frozen pilot, `impact` = high-impact instances from `impact_instances.json`. **Record**: `pending` = beats the frozen snapshot but not yet confirmed against the external reference repository; `confirmed` = a maintainer checked that the reference repository lists it as the new best known (date and link under **Confirmed**, source of truth `confirmations.json`).","",
+           "| Instance | Set | Blocks | Snapshot best | Delta | Record | Confirmed | Participant | Submission |","|---|---|---:|---:|---:|---|---|---|---|"]
     for x in valid:
         conf=x.get("confirmed")
         confirmed=f'{conf["on"]} · [{conf["source"]}]({conf["url"]})' if conf else "—"
-        lines.append(f'| {x["instance"]} | {x["blocks"]} | {x["best_known"]} | {x["delta_to_snapshot"]:+d} | {x["record_status"] or "—"} | {confirmed} | {x["participant"]} | {x["id"]} |')
-    if not valid:lines.append("| — | — | — | — | — | — | No pilot submissions yet | — |")
+        lines.append(f'| {x["instance"]} | {x["set"]} | {x["blocks"]} | {x["best_known"]} | {x["delta_to_snapshot"]:+d} | {x["record_status"] or "—"} | {confirmed} | {x["participant"]} | {x["id"]} |')
+    if not valid:lines.append("| — | — | — | — | — | — | — | No pilot submissions yet | — |")
     lines+=["","## Controls (not ranked)","","| Instance | Blocks | Participant |","|---|---:|---|"]
     for x in controls_valid:lines.append(f'| {x["instance"]} | {x["blocks"]} | {x["participant"]} |')
     lines+=["",f'Invalid or rejected entries: {sum(not x["valid"] for x in results)}.']

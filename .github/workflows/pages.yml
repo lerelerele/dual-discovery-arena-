@@ -8,6 +8,7 @@ on:
       - 'verify.py'
       - 'pilot_instances.json'
       - 'confirmations.json'
+      - 'impact_instances.json'
       - 'dashboard/**'
       - '.github/workflows/pages.yml'
   workflow_dispatch:

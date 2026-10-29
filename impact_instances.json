@@ -1,0 +1,11 @@
+{
+  "description": "High-impact open (v,k,t) instances: pure (v,k,t) coverings that appear most often as components of current Sum records in the Covering Repository. Improving one by a block lowers every record built from it.",
+  "snapshot": "2026-10-30",
+  "source": "https://www.coveringrepository.com/systems.aspx",
+  "selection": "Ranked by blocks saved across current Sum records per block of improvement; instances whose best known size equals the Schonheim bound (proven optimal) were excluded.",
+  "instances": [
+    {"v": 23, "k": 11, "t": 6, "best_known": 406, "lower_bound": 249, "lower_bound_type": "Schonheim", "blocks_saved_per_improvement": 88, "record_date": "2026-10-18"},
+    {"v": 16, "k": 8, "t": 5, "best_known": 115, "lower_bound": 82, "lower_bound_type": "Schonheim", "blocks_saved_per_improvement": 62, "record_date": "2006-05-08"},
+    {"v": 29, "k": 10, "t": 5, "best_known": 836, "lower_bound": 589, "lower_bound_type": "Schonheim", "blocks_saved_per_improvement": 60, "record_date": "2026-04-21"}
+  ]
+}

@@ -19,7 +19,9 @@ def main():
   p.error("id and participant must use 1-64 alphanumeric, dash or underscore characters")
  pilot=json.loads(Path("pilot_instances.json").read_text())
  allowed={(i["v"],i["k"],i["t"]) for i in pilot["instances"]}|{(7,3,2),(12,6,4)}
- if (a.v,a.k,a.t) not in allowed:p.error("instance not in pilot")
+ if Path("impact_instances.json").exists():
+  allowed|={(i["v"],i["k"],i["t"]) for i in json.loads(Path("impact_instances.json").read_text())["instances"]}
+ if (a.v,a.k,a.t) not in allowed:p.error("instance not in pilot or impact set")
  if a.blocks.stat().st_size>2000000:p.error("blocks file too large")
  check=verify(a.v,a.k,a.t,load_blocks(a.blocks),a.base)
  if not check["valid"]:p.error(f"invalid covering: {check}")

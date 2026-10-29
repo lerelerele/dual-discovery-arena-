@@ -20,8 +20,10 @@ GOOD = {"submission": SID, "instance": "C(29,7,3)", "blocks": 131,
 def run_with(confirmations):
     d = Path(tempfile.mkdtemp())
     try:
-        for name in ("arena", "submissions", "verify.py", "pilot_instances.json"):
+        for name in ("arena", "submissions", "verify.py", "pilot_instances.json", "impact_instances.json"):
             src = ROOT / name
+            if not src.exists():
+                continue
             if src.is_dir():
                 shutil.copytree(src, d / name)
             else:
