@@ -1,0 +1,36 @@
+name: Test verifier
+on:
+  pull_request:
+    paths:
+      - 'verify.py'
+      - 'arena/**'
+      - 'test_differential.py'
+      - 'orchestrator/**'
+      - 'test_orchestrator.py'
+      - '.github/workflows/test.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'verify.py'
+      - 'arena/**'
+      - 'test_differential.py'
+      - 'orchestrator/**'
+      - 'test_orchestrator.py'
+      - '.github/workflows/test.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  differential:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python test_differential.py 2000
+      - run: python verify.py 7 3 2 submissions/example-fano/blocks.txt 0
+      - run: python test_orchestrator.py
