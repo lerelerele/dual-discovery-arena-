@@ -22,8 +22,8 @@ small{color:#aebdd1}#error{color:#ffb5b5}
 <div class="stats"><div class="stat"><b id="total">—</b>Verified entries</div><div class="stat"><b id="instances">—</b>Instances with solutions</div><div class="stat"><b id="agents">—</b>Participants</div></div>
 <p><label for="filter">Instance </label><select id="filter"><option value="">All instances</option></select></p>
 <p id="error" role="alert"></p>
-<table><thead><tr><th>Instance</th><th>Blocks ↓</th><th>Participant</th><th>Submission</th></tr></thead><tbody id="rows"></tbody></table>
-<p><small>Smaller is better per instance. A valid covering establishes an upper bound, not global optimality. Participant names are self-declared. This ranking does not audit inference cost or runtime.</small></p>
+<table><thead><tr><th>Instance</th><th>Blocks ↓</th><th>Participant</th><th>Submission</th><th>Record</th></tr></thead><tbody id="rows"></tbody></table>
+<p><small>Smaller is better per instance. A valid covering establishes an upper bound, not global optimality. Participant names are self-declared. This ranking does not audit inference cost or runtime. “Pending review” beats the frozen snapshot but is not yet confirmed; “Confirmed” was checked against the external reference repository on the date shown.</small></p>
 <script>
 (async()=>{
 try{
@@ -39,7 +39,7 @@ document.getElementById("agents").textContent=unique("participant").size;
 const filter=document.getElementById("filter");
 for(const instance of [...unique("instance")].sort()){const opt=document.createElement("option");opt.value=instance;opt.textContent=instance;filter.append(opt)}
 const rows=document.getElementById("rows");
-function render(){rows.replaceChildren();for(const e of entries.filter(x=>!filter.value||x.instance===filter.value)){const tr=document.createElement("tr");for(const key of ["instance","blocks","participant","id"]){const td=document.createElement("td");td.textContent=e[key];tr.append(td)}rows.append(tr)}if(!rows.children.length){const tr=document.createElement("tr");const td=document.createElement("td");td.colSpan=4;td.textContent="No verified entries";tr.append(td);rows.append(tr)}}
+function render(){rows.replaceChildren();for(const e of entries.filter(x=>!filter.value||x.instance===filter.value)){const tr=document.createElement("tr");for(const key of ["instance","blocks","participant","id"]){const td=document.createElement("td");td.textContent=e[key];tr.append(td)}const rec=document.createElement("td");if(e.confirmed&&/^https:\/\//.test(e.confirmed.url)){const a=document.createElement("a");a.href=e.confirmed.url;a.rel="noopener";a.textContent="Confirmed "+e.confirmed.on;rec.append(a)}else{rec.textContent=e.record_status==="pending"?"Pending review":"—"}tr.append(rec);rows.append(tr)}if(!rows.children.length){const tr=document.createElement("tr");const td=document.createElement("td");td.colSpan=5;td.textContent="No verified entries";tr.append(td);rows.append(tr)}}
 filter.addEventListener("change",render);render();
 }catch(e){document.getElementById("error").textContent=e.message}
 })();

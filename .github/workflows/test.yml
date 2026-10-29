@@ -7,6 +7,8 @@ on:
       - 'test_differential.py'
       - 'orchestrator/**'
       - 'test_orchestrator.py'
+      - 'confirmations.json'
+      - 'test_confirmations.py'
       - '.github/workflows/test.yml'
   push:
     branches: [main]
@@ -16,6 +18,8 @@ on:
       - 'test_differential.py'
       - 'orchestrator/**'
       - 'test_orchestrator.py'
+      - 'confirmations.json'
+      - 'test_confirmations.py'
       - '.github/workflows/test.yml'
   workflow_dispatch:
 permissions:
@@ -34,3 +38,4 @@ jobs:
       - run: python test_differential.py 2000
       - run: python verify.py 7 3 2 submissions/example-fano/blocks.txt 0
       - run: python test_orchestrator.py
+      - run: python test_confirmations.py

@@ -22,6 +22,16 @@ Each line of `blocks.txt` contains exactly k distinct integers, using the declar
 
 For each instance, fewer verified blocks is better. A covering proves an upper bound, **not optimality**. The eight open pilot instances and two controls are frozen in `pilot_instances.json`. The reference file hash is recorded. Historic best-known values are a snapshot, not a claim of current world records.
 
+### Confirmed records
+
+The leaderboard's **Record** column shows `pending` when a verified covering beats the frozen snapshot, and `confirmed` once a maintainer has checked that the external reference repository ([Covering Repository](https://www.coveringrepository.com/systems.aspx)) lists it as the new best known. The **Confirmed** column gives the date and the link. Confirmations live in `confirmations.json`, one entry per submission:
+
+```json
+{"submission":"claude-opus-c29-7-3","instance":"C(29,7,3)","blocks":131,"confirmed_on":"2026-10-29","source":"Covering Repository","url":"https://www.coveringrepository.com/systems.aspx"}
+```
+
+An entry that does not match a valid pilot submission beating the snapshot (same instance and block count), or that is malformed, makes the leaderboard run fail instead of being ignored.
+
 The public ranking uses `condition: open`. Experimental conditions A–G are **not** accepted as audited claims in public PRs: valid controlled comparisons require an external orchestrator, isolation, logged seeds, equal budgets, and verified run provenance. Reported runtime, tokens, and costs are not independently audited.
 
 ## Run locally
