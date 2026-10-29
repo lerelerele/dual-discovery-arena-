@@ -8,6 +8,7 @@ on:
       - 'orchestrator/**'
       - 'test_orchestrator.py'
       - 'confirmations.json'
+      - 'impact_instances.json'
       - 'test_confirmations.py'
       - '.github/workflows/test.yml'
   push:
@@ -19,6 +20,7 @@ on:
       - 'orchestrator/**'
       - 'test_orchestrator.py'
       - 'confirmations.json'
+      - 'impact_instances.json'
       - 'test_confirmations.py'
       - '.github/workflows/test.yml'
   workflow_dispatch:
