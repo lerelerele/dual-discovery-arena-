@@ -8,6 +8,7 @@ on:
       - 'verify.py'
       - 'pilot_instances.json'
       - 'confirmations.json'
+      - 'impact_instances.json'
   workflow_dispatch:
 permissions:
   contents: write
