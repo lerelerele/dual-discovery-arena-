@@ -1,21 +1,80 @@
 name: Verify submissions
 on:
-  pull_request:
-  push:
-    branches: [main]
-  workflow_dispatch:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
 permissions:
   contents: read
+  pull-requests: read
 jobs:
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout trusted main verifier
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Download PR changed files list
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          python - <<'PY'
+          import json,os,urllib.request
+          url=f"https://api.github.com/repos/{os.environ['REPO']}/pulls/{os.environ['PR']}/files?per_page=100"
+          files=[]
+          while url:
+              req=urllib.request.Request(url,headers={"Authorization":"Bearer "+os.environ["GH_TOKEN"],"Accept":"application/vnd.github+json"})
+              with urllib.request.urlopen(req,timeout=15) as resp:
+                  files.extend(json.load(resp))
+                  link=resp.headers.get("Link","")
+              url=next((part.split("<",1)[1].split(">",1)[0] for part in link.split(",") if 'rel="next"' in part),None)
+          if not files or any(not f["filename"].startswith("submissions/") or f["status"] not in ("added",) or f["filename"].split("/")[-1] not in ("blocks.txt","manifest.json") or len(f["filename"].split("/"))!=3 for f in files):
+              raise SystemExit("PR must only add submission manifest.json and blocks.txt files")
+          with open("/tmp/allowed.json","w") as out:json.dump([f["filename"] for f in files],out)
+          PY
+      - name: Fetch untrusted submission data only
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import json,os,urllib.request,base64,pathlib
+          paths=json.load(open("/tmp/allowed.json"))
+          for path in paths:
+              url=f"https://api.github.com/repos/{os.environ['REPO']}/contents/{path}?ref={os.environ['SHA']}"
+              req=urllib.request.Request(url,headers={"Authorization":"Bearer "+os.environ["GH_TOKEN"],"Accept":"application/vnd.github+json"})
+              with urllib.request.urlopen(req,timeout=15) as resp:obj=json.load(resp)
+              if obj.get("type")!="file" or obj.get("size",0)>2000000:raise SystemExit("invalid file")
+              # Blob API returns base64 even when Contents API omits content for >1MB.
+              blob_url=f"https://api.github.com/repos/{os.environ['REPO']}/git/blobs/{obj['sha']}"
+              blob_req=urllib.request.Request(blob_url,headers={"Authorization":"Bearer "+os.environ["GH_TOKEN"],"Accept":"application/vnd.github+json"})
+              with urllib.request.urlopen(blob_req,timeout=15) as blob_resp:blob=json.load(blob_resp)
+              if blob.get("encoding")!="base64" or not isinstance(blob.get("content"),str):raise SystemExit("blob encoding missing")
+              raw=base64.b64decode(blob["content"],validate=True)
+              if len(raw)>2000000:raise SystemExit("file too large")
+              target=pathlib.Path(path);target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(raw)
+          PY
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python -m arena.leaderboard
+      - name: Verify using trusted main code
+        run: |
+          python -m arena.leaderboard
+          python - <<'PY'
+          import json
+          rows=json.load(open('leaderboard.json'))
+          allowed=json.load(open('/tmp/allowed.json'))
+          ids={path.split('/')[1] for path in allowed}
+          if any(not any(path==f'submissions/{id}/{name}' for path in allowed) for id in ids for name in ('manifest.json','blocks.txt')):
+              raise SystemExit('Each submission requires manifest.json and blocks.txt')
+          new=[x for x in rows if x['id'] in ids]
+          if len(new)!=len(ids) or any(not x['valid'] for x in new):
+              raise SystemExit('Rejected new submission(s) in PR')
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
