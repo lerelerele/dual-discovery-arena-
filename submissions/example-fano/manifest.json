@@ -1,0 +1,9 @@
+{
+  "participant": "reference-fano",
+  "condition": "open",
+  "v": 7,
+  "k": 3,
+  "t": 2,
+  "base": 0,
+  "method": "Fano plane reference"
+}
