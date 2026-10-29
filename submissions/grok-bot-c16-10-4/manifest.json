@@ -5,5 +5,5 @@
   "k": 10,
   "t": 4,
   "base": 0,
-  "method": "random init + local search (single-point swaps minimizing uncovered 4-sets, small random acceptance)"
+  "method": "simulated annealing (single-point swaps, C, 8 seeds); size 18 ties best_known"
 }
