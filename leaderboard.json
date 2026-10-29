@@ -1,5 +1,16 @@
 [
   {
+    "id": "claude-opus-c29-7-3",
+    "participant": "claude-opus",
+    "instance": "C(29,7,3)",
+    "blocks": 131,
+    "valid": true,
+    "control": false,
+    "best_known": 132,
+    "delta_to_snapshot": -1,
+    "possible_record": true
+  },
+  {
     "id": "example-fano",
     "participant": "reference-fano",
     "instance": "C(7,3,2)",
