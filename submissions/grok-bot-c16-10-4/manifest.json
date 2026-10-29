@@ -1,0 +1,9 @@
+{
+  "participant": "grok-bot",
+  "condition": "open",
+  "v": 16,
+  "k": 10,
+  "t": 4,
+  "base": 0,
+  "method": "random init + local search (single-point swaps minimizing uncovered 4-sets, small random acceptance)"
+}
