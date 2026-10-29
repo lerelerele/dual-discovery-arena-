@@ -1,6 +1,6 @@
 """Offline regression tests for mock orchestrator."""
 import json,os,tempfile
-from orchestrator.core import Budget,run_condition,run_F
+from orchestrator.core import Budget,run_condition,run_F,Agent
 from orchestrator.ledger import Ledger,verify_chain
 from orchestrator.mock_agents import MockAgent
 from verify import verify
@@ -17,12 +17,24 @@ def main():
         assert E["best_size"]>=41
         F=run_F([a,b],INST,Budget(1,30),1,verify,ledger)
         assert F["verifier_calls"]<=30
+        same=run_condition("C",[MockAgent("gpt"),MockAgent("gpt")],INST,Budget(.2,10),4,True,verify,ledger)
+        assert same["verifier_calls"]==10
+        class InvalidParent(Agent):
+            name="bad"
+            def propose(self,instance,view,rnd):
+                return [],["invisible-id"],.02,{"note":"invalid parent"}
+        rejected=run_condition("reject",[InvalidParent()],INST,Budget(.1,3),5,False,verify,ledger,rounds=2)
+        assert rejected["cost"]==.04 and rejected["verifier_calls"]==0
         ledger.close({"E":E["best_size"],"F":F["best_size"]})
         entries=[json.loads(line) for line in open(path)]
         fc=[e["data"] for e in entries if e["kind"]=="candidate" and e["data"]["condition"].startswith("F/")]
         assert all(set(c["lineage"])=={c["author"]} for c in fc)
         ec=[e["data"] for e in entries if e["kind"]=="candidate" and e["data"]["condition"]=="E"]
-        assert any(set(c["lineage"])=={"gpt","opus"} for c in ec)
+        assert any({m["model"] for m in c["lineage"].values()}=={"gpt","opus"} for c in ec)
+        cc=[e["data"] for e in entries if e["kind"]=="candidate" and e["data"]["condition"]=="C"]
+        assert {c["author"] for c in cc}=={"gpt#1","gpt#2"}
+        rr=[e["data"] for e in entries if e["kind"]=="proposal_rejected" and e["data"]["condition"]=="reject"]
+        assert len(rr)==2 and all("parent" in x["reason"] for x in rr)
         assert verify_chain(path)[0]
         lines=open(path).read().splitlines()
         altered=json.loads(lines[3]);altered["data"]["cost"]=0
